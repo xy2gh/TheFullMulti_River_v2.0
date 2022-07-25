@@ -14,15 +14,15 @@ import math
 
 #Define river 
 compartments = ["surface", "flowingWater", "stagnantWater", "sediment"]
-compDepth= [0.1, 4.9, 0.4, 0.02]
-widthRS=80
+compDepth= [0.2, 0.65, 0.1, 0.05]
+widthRS=5
 #all alculations are in m!
-lengthTotal_km = 1000 #Total modelled length in Km
+lengthTotal_km = 0.5 #Total modelled length in Km
 numRS= 20
 G = "10"
 T_K = "287.15" #asummed the same for all compartments 
 SPM_mgL= ["30", "50", "70", "90"]
-vflow_m_s=1.30
+vflow_m_s=0.06
 
 indexList= list(range(numRS*4))
 #generate list of river sections (RS) with same dimensions and list of their corresponding lengths 
@@ -41,20 +41,12 @@ for l in range (1,len(RSlengths_list)):
 
 ##CREATE RIVER IMPUT FILE
 
-file_name = "compartmentsGenericRiverSec_prop.txt"
+file_name = "compartmentsFloridaChanel_prop.txt"
 
 out_file = open(file_name, "w")
 out_file.write("riverSection,nameRS,compartment,compType,depth_m,length_m,volume_m3,width_m,G,T_K,vFlow_m_s,SPM_mgL\n")
 for rs in range(numRS):
     for comp in range(len(compartments)):
-        # if comp == 0:
-        #     index = rs*4
-        # elif comp== 1:
-        #     index = rs*4+1
-        # elif comp== 2:
-        #      index = rs*4+2
-        # else:
-        #      index = rs*4+3
         out_file.write(str(rs)+","+ "RS"+str(rs)+ "," + str(comp+1) +","+ compartments[comp]+","+ str(compDepth[comp])+ "," + str(RS_length_m)+ "," + str(compDepth[comp]*RS_length_m*widthRS)+ ","+str(widthRS)+ ","+ G +","+T_K +","+ str(vflow_m_s)+","+ SPM_mgL[0] +"\n")    
 out_file.close()
 
