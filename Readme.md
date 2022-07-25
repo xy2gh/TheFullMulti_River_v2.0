@@ -15,7 +15,7 @@ The corrections include:
 
 All these corrections have resulted in sligth changes on the outputs of the model that are reflected in the rate constants heat maps and multigraphs of particle concentration distribution along the different compartments, particles species over the generic river profile. However, none of these changes affect the rational behing The Full Multi modelling framework, on the contrary they reinforce the importance of the highlighted concept of working with open source models where the user comunity can survey and improve over time such tools to make them stronger.
 
-We would like to aknowledge the contributions made by Dr. Isamu Ogura (National Institute of Advanced Industrial Science and Technology, NIST, Japan) by pointing out the bugs here described wich allowed us to perform the needed corrections of the Full Multi code.
+We would like to aknowledge the contributions made by Dr. Isamu Ogura (Research Institute of Science for Safety and Sustainability (RISS) National Institute of Advanced Industrial Science and Technology (AIST), Japan) by pointing out the bugs here described wich allowed us to perform the needed corrections of the Full Multi code.
 
 
 ### Authors
