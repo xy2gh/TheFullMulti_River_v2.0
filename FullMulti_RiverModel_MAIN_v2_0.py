@@ -40,23 +40,20 @@ warnings.filterwarnings('ignore')
 
 # Import imput files
 data_folder = Path("Inputs/")
-comp_folder = Path("Inputs/compartments")
+
 
 process_df = readProcessparam(data_folder / "process_paramRiver.txt")
 MP_prop = microplasticData(data_folder / "microplasticsSizeClass.txt")
 compartments_prop = readCompartmentData(
     data_folder / "compartmentsGenericRiverSec_prop.txt")
-#For time varying properties
-comp_prop_dict = readCompartmentData_from_csv(comp_folder)
 
-river_flows = pd.read_csv(data_folder / "flow_connectivity_Victoria.csv")
+river_flows = pd.read_csv(data_folder / "flow_connectivity.csv")
 # Add river section depth field
-for f in comp_prop_dict:
-    compartments_prop=comp_prop_dict[f]
-    RSdepth = []
-    for row in range(len(compartments_prop)):
-        RSdepth.append(round(sum(compartments_prop.depth_m[0:4]), 2))
-    compartments_prop["depthRS_m"] = RSdepth
+
+RSdepth = []
+for row in range(len(compartments_prop)):
+    RSdepth.append(round(sum(compartments_prop.depth_m[0:4]), 2))
+compartments_prop["depthRS_m"] = RSdepth
 
 # MODEL SET UP
 
