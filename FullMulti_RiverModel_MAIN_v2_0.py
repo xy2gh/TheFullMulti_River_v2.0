@@ -3,10 +3,16 @@
 Created on Thu Jul  1 10:48:13 2021
 
 @author: PradoDomercq
+
+In this version we integrate functions that allow:
+    -  Time varying compartment properties. We will store as many files of compartment properties as needed in the forlder compartments and will read these files into a dictionary wich keys correspond to those files: i.e. comp_properties_month
+    -  Time varying discharge flow (to be implemented)
+    -  Time varying emissions (to be implemented)
+    
 """
 
 # Import libraries and modules
-from Functions.readImputParam import readProcessparam, microplasticData, readCompartmentData
+from Functions.readImputParam import readProcessparam, microplasticData, readCompartmentData,readCompartmentData_from_csv
 from helpers.GlobalConstants import *
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -34,17 +40,23 @@ warnings.filterwarnings('ignore')
 
 # Import imput files
 data_folder = Path("Inputs/")
+comp_folder = Path("Inputs/compartments")
 
 process_df = readProcessparam(data_folder / "process_paramRiver.txt")
 MP_prop = microplasticData(data_folder / "microplasticsSizeClass.txt")
 compartments_prop = readCompartmentData(
     data_folder / "compartmentsGenericRiverSec_prop.txt")
-river_flows = pd.read_csv(data_folder / "flow_connectivity.csv")
+#For time varying properties
+comp_prop_dict = readCompartmentData_from_csv(comp_folder)
+
+river_flows = pd.read_csv(data_folder / "flow_connectivity_Victoria.csv")
 # Add river section depth field
-RSdepth = []
-for row in range(len(compartments_prop)):
-    RSdepth.append(round(sum(compartments_prop.depth_m[0:4]), 2))
-compartments_prop["depthRS_m"] = RSdepth
+for f in comp_prop_dict:
+    compartments_prop=comp_prop_dict[f]
+    RSdepth = []
+    for row in range(len(compartments_prop)):
+        RSdepth.append(round(sum(compartments_prop.depth_m[0:4]), 2))
+    compartments_prop["depthRS_m"] = RSdepth
 
 # MODEL SET UP
 
@@ -91,9 +103,10 @@ record = "True"
 # - imputMP: Define imput location and wich MP form is emmited by indicating the river section number, river compartment number, MP aggregation state and size bin: ex. 02Ae (RS=0:1, comp= 2:flowing water, MPtype:A:FreeMP, sizeBin:e:1000um)
 # - imputFlow: define number of particles per minute entering the system
 # - imputPulse: define number of particles entering the systems in a pulse (if any)
-composition = "PE"
-imputMP = "02Ae"
-imputFlow = 100
+composition = "tyre"
+imputMP = flow_input
+
+#imputFlow = 100
 imputPulse = 0
 
 # Set simulation time:
@@ -613,15 +626,15 @@ for j in range(len(compartments)):
         for k in range(len(MPforms)):
             # Plot
             y = extract_SizeBins(t, riverComp[j], MPforms[k])
-            axs[j, k].plot(x, [e * 10**6/1.3 for e in y[0]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[0]],
                            linewidth=2.5, color=palette(0), label='0.1 um')
-            axs[j, k].plot(x, [e * 10**6/1.3 for e in y[1]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[1]],
                            linewidth=2.5, color=palette(1), label='1 um')
-            axs[j, k].plot(x, [e * 10**6/1.3 for e in y[2]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[2]],
                            linewidth=2.5, color=palette(2), label='10 um')
-            axs[j, k].plot(x, [e * 10**6/1.3 for e in y[3]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[3]],
                            linewidth=2.5, color=palette(3), label='100 um')
-            axs[j, k].plot(x, [e * 10**6/1.3 for e in y[4]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[4]],
                            linewidth=2.5, color=palette(4), label='1000 um')
 
             if k == 3:
