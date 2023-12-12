@@ -101,7 +101,7 @@ record = "True"
 # - imputFlow: define number of particles per minute entering the system
 # - imputPulse: define number of particles entering the systems in a pulse (if any)
 composition = "PE"
-imputMP = flow_input
+imputMP = "02Ae"
 
 #imputFlow = 100
 imputPulse = 0
