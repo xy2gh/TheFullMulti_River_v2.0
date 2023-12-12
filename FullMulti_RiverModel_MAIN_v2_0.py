@@ -100,7 +100,7 @@ record = "True"
 # - imputMP: Define imput location and wich MP form is emmited by indicating the river section number, river compartment number, MP aggregation state and size bin: ex. 02Ae (RS=0:1, comp= 2:flowing water, MPtype:A:FreeMP, sizeBin:e:1000um)
 # - imputFlow: define number of particles per minute entering the system
 # - imputPulse: define number of particles entering the systems in a pulse (if any)
-composition = "tyre"
+composition = "PE"
 imputMP = flow_input
 
 #imputFlow = 100
