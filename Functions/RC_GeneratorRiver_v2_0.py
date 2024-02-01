@@ -310,7 +310,7 @@ def mixing(flowingWater, compartment, updown, comp_dict):
         k_mix = (10**-10)*(flowingWater.volume_m3/comp_dict[compartment].volume_m3)
     
     elif comp_dict[compartment].name == "stagnantWater":
-        k_mix = 10**-13*(flowingWater.volume_m3/comp_dict[compartment].volume_m3)
+        k_mix = (10**-13)*(flowingWater.volume_m3/comp_dict[compartment].volume_m3)
           
     elif comp_dict[compartment].name == "sediment":
         k_mix = 0

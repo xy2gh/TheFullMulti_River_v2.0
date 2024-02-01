@@ -103,7 +103,7 @@ record = "True"
 composition = "PE"
 imputMP = "02Ae"
 
-#imputFlow = 100
+imputFlow = 100
 imputPulse = 0
 
 # Set simulation time:
@@ -623,15 +623,15 @@ for j in range(len(compartments)):
         for k in range(len(MPforms)):
             # Plot
             y = extract_SizeBins(t, riverComp[j], MPforms[k])
-            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[0]],
+            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[0]],
                            linewidth=2.5, color=palette(0), label='0.1 um')
-            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[1]],
+            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[1]],
                            linewidth=2.5, color=palette(1), label='1 um')
-            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[2]],
+            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[2]],
                            linewidth=2.5, color=palette(2), label='10 um')
-            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[3]],
+            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[3]],
                            linewidth=2.5, color=palette(3), label='100 um')
-            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[4]],
+            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[4]],
                            linewidth=2.5, color=palette(4), label='1000 um')
 
             if k == 3:
