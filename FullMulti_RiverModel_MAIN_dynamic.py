@@ -14,6 +14,7 @@ In this version we integrate functions that allow:
 # Import libraries and modules
 from Functions.readImputParam import readProcessparam, microplasticData, readCompartmentData,readCompartmentData_from_csv
 from helpers.GlobalConstants import *
+from helpers.helpers import *
 from datetime import datetime, timedelta
 from pathlib import Path
 from Functions.fillInteractions_df_fun_v2_0 import*
@@ -90,7 +91,7 @@ for d in range(len(riverSectLength)):
 # - mode (Standard). Monthly under developement
 # - mode2 (Timelimit or raw): "Timelimit" mode sets up a time limit of 30min on the processes that exceeds that speed, while "raw" mode leaves the rate constant as calcualted. The raw version can straing the solver due to time.
 # - record (True or False) : if "True" the results, RC and intercations dataframes will be recorded in the Results folder.
-SOLVER = "Dynamic"
+SOLVER = "SteadyState"
 mode = "Standard"
 mode2 = "Timelimit"
 record = "True"
@@ -248,7 +249,10 @@ if SOLVER == 'Dynamic':
     NFinal_num = pd.DataFrame(data=Nfinal, index=t_span, columns=Clist)
 
 elif SOLVER == "SteadyState":
-    print("Steady State not yet implemented")
+    # !!! 03.07 Prado's coding
+    k = interactions_df.to_numpy()
+    SS_solution=np.linalg.solve(k, I)
+    #print("Solver - SteadyState could be applied in the other .py file")
 
 # Vector of volumes corresponding to the compartments of the river
 dilution_vol_m3 = volumesVector(Clist, compartments_prop)
@@ -257,7 +261,7 @@ ConcFinal_num_m3 = pd.DataFrame(data=0, index=t_span, columns=Clist)
 for ind in range(len(NFinal_num)):
     ConcFinal_num_m3.iloc[ind] = NFinal_num.iloc[ind]/dilution_vol_m3
 
-# Substitute values smaller than 10-5 to 0
+# Substitute values smaller than 10-15 to 0
 ConcFinal_num_m3 = ConcFinal_num_m3.apply(
     lambda x: [y if y >= 1e-15 else 0 for y in x])
 
@@ -623,15 +627,15 @@ for j in range(len(compartments)):
         for k in range(len(MPforms)):
             # Plot
             y = extract_SizeBins(t, riverComp[j], MPforms[k])
-            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[0]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[0]],
                            linewidth=2.5, color=palette(0), label='0.1 um')
-            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[1]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[1]],
                            linewidth=2.5, color=palette(1), label='1 um')
-            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[2]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[2]],
                            linewidth=2.5, color=palette(2), label='10 um')
-            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[3]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[3]],
                            linewidth=2.5, color=palette(3), label='100 um')
-            axs[j, k].plot(x, [e / (10**6*2.5) for e in y[4]],
+            axs[j, k].plot(x, [e / (10**6*1.3) for e in y[4]],
                            linewidth=2.5, color=palette(4), label='1000 um')
 
             if k == 3:
