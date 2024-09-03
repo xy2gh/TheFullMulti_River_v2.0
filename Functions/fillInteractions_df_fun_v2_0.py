@@ -159,4 +159,4 @@ def fillInteractions_fun_v2_0 (RC_df,Clist,river_flows):
     array=np.column_stack(interactions_df_rows)# vstack it was set as column stack and was wrong!!
     interactions_df_sol=pd.DataFrame(array,index=list_sp1, columns=list_sp1)
 
-    return interactions_df_sol
+    return interactions_df_sol.transpose()

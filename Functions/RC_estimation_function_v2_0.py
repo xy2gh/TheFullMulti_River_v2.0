@@ -4,7 +4,12 @@ Created on Thu Jul  1 10:44:30 2021
 
 @author: PradoDomercq
 """
-
+'''
+Author: Xiaoyu Zhang (xiaoyu.zhang@aces.su.se)
+Date: 2023-12-12 10:21:29
+LastEditTime: 2024-09-02 15:51:24
+Description: This file was modified due to the updates of the new parameterization.
+'''
 """Estimate RATE CONSTANTS"""
 # Estimate rate constants for all "species" = combination of RS*riverComp*MPforms*sizeBins (len (Clist))
 
@@ -24,12 +29,17 @@ from helpers.GlobalConstants import *
 from objects.Particulates import Particulates  # class to generate MP and SPM objects
 from objects.ParticulatesBF import ParticulatesBF  # class to generate MP and SPM objects
 from objects.ParticulatesSPM import ParticulatesSPM  # class to generate MP and SPM objects
-def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartments_prop, process_df, numberRS, composition, mode2, mode, date, riverComp, MPforms, sizeBin, river_flows):
+
+
+
+def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartments_prop, process_df, numberRS, 
+                                composition, mode2, mode, date, riverComp, MPforms, sizeBin, river_flows, settlingMethod, 
+                                vflow_m_s, imputMP):
 
     RC_df = pd.DataFrame(index=processList, columns=CombList)
 
     if numberRS <= 10:
-        print("Less than 10 RS")
+        print(str(composition)+str(imputMP)+": Less than 10 RS")
     # if len(Clist) <= 10*len(riverComp)*len(MPforms)*len(sizeBin):
         for spc in Clist:
 
@@ -72,6 +82,7 @@ def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartme
             if aggState == "A":
                 particle = Particulates(MP_prop, MP_index)
                 particle.calc_volume()
+                
             elif aggState == "B":
                 MP1 = Particulates(MP_prop, MP_index)
                 MP1.calc_volume()
@@ -102,47 +113,50 @@ def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartme
             RC_df.loc["degradation", spc[2:6]] = degradation(
                 process_df.t_half_d.loc[idx])
             RC_df.loc["fragmentation", spc[2:6]] = fragmentation(
-                process_df, idx, particle, sizeBinIdx, aggState)
+                process_df, idx, particle, sizeBinIdx, aggState) 
             RC_df.loc["heteroagg", spc[2:6]] = heteroagg(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
             RC_df.loc["breakup", spc[2:6]] = breakup(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
-            RC_df.loc["settling", spc[2:6]] = settling(
-                particle, surface.depth_m, "Stokes", compartment)
-            RC_df.loc["rising", spc[2:6]] = rising(
-                particle, flowingWater.depth_m, "Stokes", compartment)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
+            RC_df.loc["settling", spc[2:6]] = settling(particle, compartment, comp_dict, settlingMethod)
+            RC_df.loc["rising", spc[2:6]] = rising(particle, compartment, comp_dict, settlingMethod)
             RC_df.loc["advection", spc[2:6]] = advection(
                 compartments_prop, comp_dict, compartment, riverSection, river_flows)
             # update creteria for mixing direction
             RC_df.loc["mixing", spc[2:6]] = mixing(
-                flowingWater, compartment, "up", comp_dict)
-            # add t biofilm growth?? Look at new processess MPLake-Antonia
+                flowingWater, compartment, comp_dict, vflow_m_s)
             RC_df.loc["biofilm", spc[2:6]] = biofilm(
                 compartment, process_df, comp_dict, idx, aggState)
-            RC_df.loc["resusp", spc[2:6]] = resusp(compartment, comp_dict)
-            RC_df.loc["burial", spc[2:6]] = burial(compartment, comp_dict)
-            RC_df.loc["sedTransport", spc[2:6]] = sedTransport(
-                compartment, comp_dict)
+            RC_df.loc["resusp", spc[2:6]] = resusp(particle, compartment, comp_dict, vflow_m_s)
+            RC_df.loc["burial", spc[2:6]] = burial(particle, compartment, comp_dict, settlingMethod, vflow_m_s)
+            RC_df.loc["sedTransport", spc[2:6]] = sedTransport(compartment, comp_dict)
+            RC_df.loc["diffusion", spc[2:6]] = diffusion(particle, compartment, comp_dict)
             RC_df.loc["defouling", spc[2:6]] = defouling(
                 compartment, process_df, comp_dict, idx, aggState)
             RC_df.loc["volume_m3", spc[2:6]] = particle.volume_m3
             RC_df.loc["density_kg_m3", spc[2:6]] = particle.density_kg_m3
 
     elif numberRS <= 100:
-        print("10 or more RS but less than 100")
+        print(str(composition)+str(imputMP)+'(vflow='+ str(vflow_m_s)+"): 10 or more RS but less than 100")
+        
         for spc in Clist:
+            
             if spc in Clist[0:10*len(riverComp)*len(MPforms)*len(sizeBin)]:
                 riverSection = spc[2]
                 compartment = spc[3]
                 aggState = spc[4]
                 sizeBinIdx = spc[5]
                 # spcAll=spc[2:6]
+                
             elif spc in Clist[10*len(riverComp)*len(MPforms)*len(sizeBin):100*len(riverComp)*len(MPforms)*len(sizeBin)]:
                 riverSection = spc[2:4]
                 compartment = spc[4]
                 aggState = spc[5]
                 sizeBinIdx = spc[6]
                 # spcAll=spc[2:7]
+                
             # Generate particle OBJECTS MPs and SPM for the corresponding size bin
 
             # generate location index from imput tables
@@ -206,32 +220,31 @@ def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartme
             RC_df.loc["fragmentation", spc[2:]] = fragmentation(
                 process_df, idx, particle, sizeBinIdx, aggState)
             RC_df.loc["heteroagg", spc[2:]] = heteroagg(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
             RC_df.loc["breakup", spc[2:]] = breakup(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
-            RC_df.loc["settling", spc[2:]] = settling(
-                particle, surface.depth_m, "Stokes", compartment)
-            RC_df.loc["rising", spc[2:]] = rising(
-                particle, flowingWater.depth_m, "Stokes", compartment)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
+            RC_df.loc["settling", spc[2:]] = settling(particle, compartment, comp_dict, settlingMethod)
+            RC_df.loc["rising", spc[2:]] = rising(particle, compartment, comp_dict, settlingMethod)
             RC_df.loc["advection", spc[2:]] = advection(
                 compartments_prop, comp_dict, compartment, riverSection, river_flows)
             # update creteria for mixing direction
             RC_df.loc["mixing", spc[2:]] = mixing(
-                flowingWater, compartment, "up", comp_dict)
-            # add t biofilm growth?? Look at new processess MPLake-Antonia
+                flowingWater, compartment, comp_dict, vflow_m_s)
             RC_df.loc["biofilm", spc[2:]] = biofilm(
                 compartment, process_df, comp_dict, idx, aggState)
-            RC_df.loc["resusp", spc[2:]] = resusp(compartment, comp_dict)
-            RC_df.loc["burial", spc[2:]] = burial(compartment, comp_dict)
-            RC_df.loc["sedTransport", spc[2:]] = sedTransport(
-                compartment, comp_dict)
+            RC_df.loc["resusp", spc[2:]] = resusp(particle, compartment, comp_dict, vflow_m_s)
+            RC_df.loc["burial", spc[2:]] = burial(particle, compartment, comp_dict, settlingMethod, vflow_m_s)
+            RC_df.loc["sedTransport", spc[2:]] = sedTransport(compartment, comp_dict)
+            RC_df.loc["diffusion", spc[2:]] = diffusion(particle, compartment, comp_dict)
             RC_df.loc["defouling", spc[2:]] = defouling(
                 compartment, process_df, comp_dict, idx, aggState)
             RC_df.loc["volume_m3", spc[2:]] = particle.volume_m3
             RC_df.loc["density_kg_m3", spc[2:]] = particle.density_kg_m3
 
     elif numberRS <= 1000:
-        print("100 or more RS but less than 1000")
+        print(str(composition)+str(imputMP)+": 100 or more RS but less than 1000")
         for spc in Clist:
             if spc in Clist[0:10*len(riverComp)*len(MPforms)*len(sizeBin)]:
                 riverSection = spc[2]
@@ -282,6 +295,7 @@ def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartme
             if aggState == "A":
                 particle = Particulates(MP_prop, MP_index)
                 particle.calc_volume()
+                
             elif aggState == "B":
                 MP1 = Particulates(MP_prop, MP_index)
                 MP1.calc_volume()
@@ -311,25 +325,24 @@ def RC_estimation_function_v2_0(processList, CombList, Clist, MP_prop, compartme
             RC_df.loc["fragmentation", spc[2:]] = fragmentation(
                 process_df, idx, particle, sizeBinIdx, aggState)
             RC_df.loc["heteroagg", spc[2:]] = heteroagg(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
             RC_df.loc["breakup", spc[2:]] = breakup(
-                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], compartments_prop.T_K.loc[comp_index], compartment, aggState)
-            RC_df.loc["settling", spc[2:]] = settling(
-                particle, surface.depth_m, "Stokes", compartment)
-            RC_df.loc["rising", spc[2:]] = rising(
-                particle, surface.depth_m, "Stokes", compartment)
+                process_df, idx, particle, SPM1, compartments_prop.G.loc[comp_index], 
+                compartments_prop.T_K.loc[comp_index], compartment, aggState, settlingMethod)
+            RC_df.loc["settling", spc[2:]] = settling(particle, compartment, comp_dict, settlingMethod)
+            RC_df.loc["rising", spc[2:]] = rising(particle, compartment, comp_dict, settlingMethod)
             RC_df.loc["advection", spc[2:]] = advection(
                 compartments_prop, comp_dict, compartment, riverSection, river_flows)
             # update creteria for mixing direction
             RC_df.loc["mixing", spc[2:]] = mixing(
-                flowingWater, compartment, "up", comp_dict)
-            # add t biofilm growth?? Look at new processess MPLake-Antonia
+                flowingWater, compartment, comp_dict, vflow_m_s)
             RC_df.loc["biofilm", spc[2:]] = biofilm(
                 compartment, process_df, comp_dict, idx, aggState)
-            RC_df.loc["resusp", spc[2:]] = resusp(compartment, comp_dict)
-            RC_df.loc["burial", spc[2:]] = burial(compartment, comp_dict)
-            RC_df.loc["sedTransport", spc[2:]] = sedTransport(
-                compartment, comp_dict)
+            RC_df.loc["resusp", spc[2:]] = resusp(particle, compartment, comp_dict, vflow_m_s)
+            RC_df.loc["burial", spc[2:]] = burial(particle, compartment, comp_dict, settlingMethod, vflow_m_s)
+            RC_df.loc["sedTransport", spc[2:]] = sedTransport(compartment, comp_dict)
+            RC_df.loc["diffusion", spc[2:]] = diffusion(particle, compartment, comp_dict)
             RC_df.loc["defouling", spc[2:]] = defouling(
                 compartment, process_df, comp_dict, idx, aggState)
             RC_df.loc["volume_m3", spc[2:]] = particle.volume_m3

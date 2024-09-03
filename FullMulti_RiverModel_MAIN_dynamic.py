@@ -107,6 +107,10 @@ imputMP = "02Ae"
 imputFlow = 100
 imputPulse = 0
 
+# define the settling method
+settlingMethod = 'Stokes'
+# NOTE: now just paired with Stokes' Law but users can freely add their own method
+
 # Set simulation time:
 # - t0: starting time (seconds)
 # - daysSimulation: total length of simulation (days)
