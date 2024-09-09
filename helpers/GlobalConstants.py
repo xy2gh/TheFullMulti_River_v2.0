@@ -15,7 +15,7 @@ Description: This file was modified for the global constants used in modeling.
 #this files stores all constants needed for running the model (i.e. for 
 #particulate & environmental compartment objects & calcualting rate processes)
 
-from Inputs.GenerateGenericRiverImputFile import * 
+from Functions.GenerateGenericRiverImputFile import * 
 
 
 k_B_J_K = 1.38*10**-23 #Boltzmann constant k_B (in J/K)
